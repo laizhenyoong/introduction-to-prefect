@@ -2,6 +2,7 @@
 
 import httpx
 from prefect import flow, get_run_logger, task
+import psycopg2
 
 @task 
 def retrieve_from_api(
@@ -18,6 +19,7 @@ def retrieve_from_api(
     response.raise_for_status()
     inventory_stats = response.json()
     logger.info(inventory_stats)
+    return inventory_stats
 
 @task 
 def clean_state_data(inventory_stats):
@@ -32,9 +34,15 @@ def clean_state_data(inventory_stats):
 def collect_petstore_inventory(
     base_url: str="petstore.swagger.io",
     path: str="/v2/store/inventory",
-    secure: bool=True
+    secure: bool=True,
+    db_host: str="localhost",
+    db_user: str="root",
+    db_pass: str="root",
+    db_name: str="petstore"
 ):
     inventory_stats = retrieve_from_api(base_url, path, secure)
+    inventory_stats = clean_state_data(inventory_stats)
+    insert_to_db(inventory_stats, db_host, db_user, db_pass, db_name)
 
 @task 
 def insert_to_db(
@@ -61,7 +69,7 @@ def insert_to_db(
                         %(pending)s, 
                         %(available)s,
                         %(unavailable)s
-                     )""", inventory_stats)
+                     )""", inventory_stats) 
 
 def main():
     collect_petstore_inventory.serve("petstore-collection-deployment")
