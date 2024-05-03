@@ -48,7 +48,20 @@ def insert_to_db(
         user=db_user, password=db_pass, dbname=db_name, host=db_host
     ) as connection:
         with connection.curser() as curser:
-            cursor.execute()
+            cursor.execute(
+               """ insert into inventory_history (
+                        fetch_timestamp, 
+                        sold, 
+                        pending, 
+                        available,
+                        unavailable
+                     ) values (
+                        now(), 
+                        %(sold)s, 
+                        %(pending)s, 
+                        %(available)s,
+                        %(unavailable)s
+                     )""", inventory_stats)
 
 def main():
     collect_petstore_inventory.serve("petstore-collection-deployment")
