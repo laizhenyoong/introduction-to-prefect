@@ -8,7 +8,7 @@ the `complete` branch.
 
 ```shell
 python -m venv .venv
-source .venv/bin/activate
+source .venv/Scripts/activate
 pip install -e '.[dev]'
 pre-commit install
 docker-compose up -d
