@@ -5,10 +5,10 @@ from prefect import flow, get_run_logger, task
 
 @task 
 def retrieve_from_api(
-        base_url,
-        path,
-        secure
-    ):
+    base_url,
+    path,
+    secure
+):
     logger = get_run_logger()
     if secure:
         url = f"https://{base_url}{path}"
@@ -30,11 +30,25 @@ def clean_state_data(inventory_stats):
 
 @flow 
 def collect_petstore_inventory(
-        base_url: str="petstore.swagger.io",
-        path: str="/v2/store/inventory",
-        secure: bool=True
-    ):
+    base_url: str="petstore.swagger.io",
+    path: str="/v2/store/inventory",
+    secure: bool=True
+):
     inventory_stats = retrieve_from_api(base_url, path, secure)
+
+@task 
+def insert_to_db(
+    inventory_stats: dict,
+    db_host: str,
+    db_user: str,
+    db_pass: str,
+    db_name: str
+):
+    with psycopg2.connect(
+        user=db_user, password=db_pass, dbname=db_name, host=db_host
+    ) as connection:
+        with connection.curser() as curser:
+            cursor.execute()
 
 def main():
     collect_petstore_inventory.serve("petstore-collection-deployment")
