@@ -47,7 +47,7 @@ def insert_to_db(
     with psycopg2.connect(
         user=db_user, password=db_pass, dbname=db_name, host=db_host
     ) as connection:
-        with connection.curser() as curser:
+        with connection.cursor() as cursor:
             cursor.execute(
                """ insert into inventory_history (
                         fetch_timestamp, 
